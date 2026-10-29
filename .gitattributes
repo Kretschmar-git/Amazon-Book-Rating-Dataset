@@ -1,0 +1,5 @@
+# Ignora templates HTML no cálculo de linguagens
+*.html linguist-vendored
+
+# Ignora pastas de ambiente virtual caso tenham sido upadas
+venv/** linguist-vendored
