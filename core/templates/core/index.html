@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="badge badge-neon rounded-pill px-3 py-2 mb-3">Análise exploratória</span>
+    <h1 class="display-6 fw-bold text-white">Amazon Book Rating Dataset</h1>
+    <p class="lead text-secondary mb-0">
+        Exploração de avaliações de livros da Amazon, incluindo perfil das notas, comportamento dos usuários,
+        tendência temporal, preços e sentimento dos comentários.
+    </p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Registros</div>
+                <h3 class="mt-2 mb-0">{{ total_rows }}</h3>
+                <small class="text-secondary">avaliações</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Colunas</div>
+                <h3 class="mt-2 mb-0">{{ total_columns }}</h3>
+                <small class="text-secondary">atributos</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Preço médio</div>
+                <h3 class="mt-2 mb-0">US$ {{ price_mean }}</h3>
+                <small class="text-secondary">por livro</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Média da nota</div>
+                <h3 class="mt-2 mb-0">{{ score_mean }}</h3>
+                <small class="text-secondary">em escala 1–5</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">1) Estrutura da base de dados</h2>
+    <p class="text-secondary mb-3">
+        O conjunto possui <strong class="text-white">{{ total_rows }}</strong> registros e <strong class="text-white">{{ total_columns }}</strong> colunas, com informações que abrangem título,
+        preço, usuário, nota, data da avaliação, resumo e texto completo da review.
+    </p>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Coluna</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in dtypes %}
+                <tr>
+                    <td class="text-white">{{ item.Coluna }}</td>
+                    <td class="text-neon">{{ item.Tipo }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">2) Dados faltantes</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered border-secondary align-middle">
+            <thead>
+                <tr>
+                    <th>Coluna</th>
+                    <th>Valores nulos</th>
+                    <th>Proporção</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in missing_table %}
+                <tr>
+                    <td class="text-white">{{ item.Coluna }}</td>
+                    <td>{{ item.Quantidade }}</td>
+                    <td class="text-warning">{{ item.Proporcao }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="text-secondary mb-0 mt-3">
+        As colunas mais impactadas por ausência de dados são <strong class="text-white">Price</strong>, <strong class="text-white">User_id</strong> e
+        <strong class="text-white">profileName</strong>, o que precisa ser considerado em análises de preço e comportamento do usuário.
+    </p>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">3) Atributos mais relevantes</h2>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <ul class="mb-0 text-secondary">
+                <li><strong class="text-neon">review/score</strong>: estabelece a percepção do usuário sobre o livro;</li>
+                <li><strong class="text-neon">Price</strong>: revela relação entre custo, qualidade percebida e demanda;</li>
+                <li><strong class="text-neon">User_id</strong>: permite identificar padrões de avaliação por consumidor;</li>
+                <li><strong class="text-neon">review/time</strong>: permite analisar evolução temporal das opiniões;</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <ul class="mb-0 text-secondary">
+                <li><strong class="text-neon">Title</strong>: mostra quais obras recebem mais atenção;</li>
+                <li><strong class="text-neon">review/text</strong>: servem para análise de sentimento e tendências;</li>
+                <li><strong class="text-neon">review/helpfulness</strong>: sinaliza o quão útil uma avaliação foi para outros leitores.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">4) Livros mais populares</h2>
+    <div class="bg-white rounded p-2 mb-3">
+        {{ top_books_chart|safe }}
+    </div>
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Livro</th>
+                <th>Quantidade de avaliações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in top_books %}
+            <tr>
+                <td class="text-white">{{ item.Titulo }}</td>
+                <td class="text-neon">{{ item.Avaliacoes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">5) Preço e distribuição das notas</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <p class="text-secondary mb-2">Preço médio dos livros</p>
+            <h3 class="text-neon">US$ {{ price_mean }}</h3>
+            <p class="mb-0 text-secondary">Livros com preço zero: <strong class="text-white">{{ books_zero_price }}</strong></p>
+        </div>
+        <div class="col-md-6">
+            <p class="text-secondary mb-2">Estatísticas da nota</p>
+            <ul class="mb-0 text-white">
+                <li>Média: <span class="text-neon">{{ score_mean }}</span></li>
+                <li>Mediana: <span class="text-neon">{{ score_median }}</span></li>
+                <li>Desvio padrão: <span class="text-neon">{{ score_std }}</span></li>
+            </ul>
+        </div>
+    </div>
+    <div class="bg-white rounded p-2 mt-4">
+        {{ price_box_chart|safe }}
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">6) Distribuição das notas</h2>
+    <!-- O gráfico nativo gerado pelo backend será renderizado aqui -->
+    <div class="bg-white rounded p-2 mb-3">
+        {{ score_chart|safe }}
+    </div>
+    <div class="table-responsive mt-3">
+        <table class="table table-sm table-bordered border-secondary">
+            <thead>
+                <tr>
+                    <th>Nota</th>
+                    <th>Frequência</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in score_counts %}
+                <tr>
+                    <td class="text-white">{{ item.Nota }}</td>
+                    <td>{{ item.Frequencia }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">7) Relação entre preço e nota</h2>
+    <div class="bg-white rounded p-2">
+        {{ price_score_chart|safe }}
+    </div>
+    <p class="text-secondary mt-3 mb-0">
+        A dispersão sugere que há avaliações positivas em várias faixas de preços, mas a relação direta entre valor mais alto e melhor nota não é tão forte.
+    </p>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">8) Quando as avaliações foram feitas</h2>
+    <div class="bg-white rounded p-2">
+        {{ time_chart|safe }}
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">9) Usuários que mais avaliaram</h2>
+    <div class="bg-white rounded p-2 mb-3">
+        {{ top_users_chart|safe }}
+    </div>
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Usuário</th>
+                <th>Número de avaliações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in top_users %}
+            <tr>
+                <td class="text-white">{{ item.Usuario }}</td>
+                <td class="text-neon">{{ item.Avaliacoes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">10) Estatísticas descritivas</h2>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="border border-secondary rounded p-3 h-100 bg-dark">
+                <div class="text-secondary small">Livros únicos</div>
+                <h4 class="mt-2 mb-0 text-white">{{ total_unique_books }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border border-secondary rounded p-3 h-100 bg-dark">
+                <div class="text-secondary small">Média de avaliações por livro</div>
+                <h4 class="mt-2 mb-0 text-white">{{ mean_reviews_per_book }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border border-secondary rounded p-3 h-100 bg-dark">
+                <div class="text-secondary small">Total de avaliações</div>
+                <h4 class="mt-2 mb-0 text-white">{{ total_rows }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">11) Avaliações mais úteis</h2>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Usuário</th>
+                    <th>Utilidade</th>
+                    <th>Nota</th>
+                    <th>Resumo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in useful_reviews %}
+                <tr>
+                    <td class="text-white">{{ item.Titulo }}</td>
+                    <td class="text-secondary">{{ item.Usuario }}</td>
+                    <td class="text-neon">{{ item.TaxaUtilidade }}</td>
+                    <td class="text-warning fw-bold">{{ item.Nota }}</td>
+                    <td class="small">{{ item.Resumo }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">12) Sentimento das avaliações</h2>
+    <div class="row g-3 align-items-center">
+        <div class="col-lg-6">
+            <div class="bg-white rounded p-2 mb-3">
+                {{ sentiment_chart|safe }}
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item bg-dark border-secondary d-flex justify-content-between text-white">
+                    <span>Positivo</span>
+                    <strong class="text-neon">{{ sentiment_counts.Positivo }}</strong>
+                </li>
+                <li class="list-group-item bg-dark border-secondary d-flex justify-content-between text-white">
+                    <span>Neutro</span>
+                    <strong class="text-secondary">{{ sentiment_counts.Neutro }}</strong>
+                </li>
+                <li class="list-group-item bg-dark border-secondary d-flex justify-content-between text-white">
+                    <span>Negativo</span>
+                    <strong class="text-danger">{{ sentiment_counts.Negativo }}</strong>
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg-6">
+            <p class="text-neon mb-2 fw-bold">Resumo</p>
+            <p class="mb-0 text-secondary">
+                Em uma amostra de comentários analisados, <strong class="text-white">{{ positive_reviews_ratio }}%</strong> são positivos e
+                <strong class="text-white">{{ negative_reviews_ratio }}%</strong> são negativos. Isso indica que a maior parte das avaliações do dataset tende a ser favorável.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mb-5">
+    <h2 class="section-title">13) Nuvem de palavras</h2>
+    <div class="bg-dark p-3 rounded border border-secondary text-center">
+        <img src="{% static 'core/wordcloud.png' %}" alt="Nuvem de palavras das avaliações" class="img-fluid rounded w-100" style="max-width: 800px; mix-blend-mode: screen;">
+    </div>
+</div>
+{% endblock %}
