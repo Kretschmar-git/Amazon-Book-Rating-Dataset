@@ -28,6 +28,10 @@
         .nav-link:hover {
             color: var(--neon-green) !important;
         }
+        .nav-link.active {
+            color: var(--neon-green) !important;
+            font-weight: 700;
+        }
         .card { 
             background-color: var(--card-bg);
             border: 1px solid #2d333b; 
@@ -74,15 +78,15 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">Amazon Books</a>
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}#dashboard">Amazon Books</a>
             <div class="d-flex gap-3">
-                <a class="nav-link text-white" href="{% url 'home' %}">Dashboard</a>
-                <a class="nav-link text-white" href="{% url 'sentimento' %}">Análise de Sentimento</a>
+                <a class="nav-link text-white {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}#dashboard">Dashboard</a>
+                <a class="nav-link text-white {% if request.path == '/sentimento/' %}active{% endif %}" href="{% url 'sentimento' %}">Análise de Sentimento</a>
             </div>
         </div>
     </nav>
 
-    <main class="container py-5">
+    <main id="dashboard" class="container py-5">
         {% block content %}{% endblock %}
     </main>
 

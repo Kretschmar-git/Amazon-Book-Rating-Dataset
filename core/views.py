@@ -114,21 +114,19 @@ def build_dashboard_context():
     )
     top_users_chart.update_layout(template='plotly_white', height=420, margin=dict(l=20, r=20, t=50, b=10), xaxis_tickangle=-45)
 
-    price_values = df['Price'].dropna().astype(float)
-    price_strip_df = pd.DataFrame({'Preço do livro': price_values})
-    price_strip_df['linha'] = 0
+    price_distribution = df['Price'].dropna().copy()
+    price_distribution = price_distribution[price_distribution <= 200].copy()
 
-    price_box_chart = px.strip(
-        price_strip_df,
-        x='Preço do livro',
-        y='linha',
+    price_box_chart = px.histogram(
+        price_distribution,
+        x=price_distribution,
+        nbins=30,
         title='Distribuição de preços dos livros',
-        color_discrete_sequence=['#4f5ee0'],
-        hover_data={'linha': False}
+        color_discrete_sequence=['#4f5ee0']
     )
-    price_box_chart.update_traces(marker=dict(size=8, opacity=0.8, line=dict(width=0)))
-    price_box_chart.update_yaxes(visible=False, showticklabels=False)
+    price_box_chart.update_traces(marker=dict(line=dict(color='rgba(79,94,224,0.7)', width=1)))
     price_box_chart.update_xaxes(title='Preço do livro', showgrid=True, gridcolor='rgba(0,0,0,0.08)')
+    price_box_chart.update_yaxes(title='Frequência', showgrid=True, gridcolor='rgba(0,0,0,0.08)')
     price_box_chart.update_layout(
         template='plotly_white',
         height=320,
@@ -220,11 +218,43 @@ def build_dashboard_context():
     generate_wordcloud(df)
 
     dtypes_table = df.dtypes.astype(str).reset_index().rename(columns={'index': 'Coluna', 0: 'Tipo'})
+    dtypes_counts = dtypes_table['Tipo'].value_counts().reset_index()
+    dtypes_counts.columns = ['Tipo', 'Quantidade']
+
+    dtypes_chart = px.bar(
+        dtypes_counts,
+        x='Tipo',
+        y='Quantidade',
+        color='Tipo',
+        color_discrete_map={
+            'str': '#d9b95c',
+            'float64': '#e74c3c',
+            'int64': '#f39c12',
+            'datetime64[us]': '#f4c7b5',
+        },
+        title=''
+    )
+    dtypes_chart.update_traces(textposition='none', width=0.7)
+    dtypes_chart.update_layout(
+        template='plotly_white',
+        height=260,
+        margin=dict(l=50, r=20, t=10, b=10),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        xaxis_title='',
+        yaxis_title='',
+        font=dict(size=12),
+        bargap=0.35
+    )
+    dtypes_chart.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.12)', title_font=dict(size=12), tickfont=dict(size=11))
+    dtypes_chart.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.12)', title_font=dict(size=12), tickfont=dict(size=11))
 
     context = {
         'total_rows': len(df),
         'total_columns': len(df.columns),
         'dtypes': dtypes_table.to_dict(orient='records'),
+        'dtypes_chart': dtypes_chart.to_html(full_html=False, include_plotlyjs='cdn'),
         'missing_table': missing_table.to_dict(orient='records'),
         'price_mean': price_mean,
         'books_zero_price': books_zero_price,

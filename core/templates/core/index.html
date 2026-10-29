@@ -56,6 +56,12 @@
         O conjunto possui <strong class="text-white">{{ total_rows }}</strong> registros e <strong class="text-white">{{ total_columns }}</strong> colunas, com informações que abrangem título,
         preço, usuário, nota, data da avaliação, resumo e texto completo da review.
     </p>
+    <div class="mb-4">
+        <div class="bg-white rounded p-2">
+            {{ dtypes_chart|safe }}
+        </div>
+    </div>
+
     <div class="table-responsive">
         <table class="table table-striped align-middle">
             <thead>
