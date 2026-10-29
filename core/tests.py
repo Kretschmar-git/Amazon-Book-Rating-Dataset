@@ -1,4 +1,7 @@
+import pandas as pd
 from django.test import SimpleTestCase
+
+from core.views import compute_sentiment_summary
 
 
 class HomePageTests(SimpleTestCase):
@@ -19,3 +22,9 @@ class HomePageTests(SimpleTestCase):
         self.assertIn('Positivo', response.context)
         self.assertIn('Negativo', response.context)
         self.assertIn('Neutro', response.context)
+
+    def test_sentiment_summary_uses_full_dataset(self):
+        df = pd.DataFrame({'review/text': ['This book is excellent!'] * 15000})
+        summary = compute_sentiment_summary(df, sample_size=None)
+        self.assertEqual(summary['total'], 15000)
+        self.assertEqual(summary['Positivo'], 15000)

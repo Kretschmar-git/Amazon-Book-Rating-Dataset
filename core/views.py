@@ -181,7 +181,8 @@ def build_dashboard_context():
 
     sentiment = SentimentIntensityAnalyzer() if ensure_vader_lexicon() else None
     sentiment_labels = []
-    for text in df['review/text'].fillna('').astype(str).head(5000):
+    review_texts = df['review/text'].fillna('').astype(str)
+    for text in review_texts:
         if sentiment is None:
             sentiment_labels.append('Neutro')
             continue
@@ -282,10 +283,14 @@ def build_dashboard_context():
     return context
 
 
-def compute_sentiment_summary(df, sample_size=5000):
+def compute_sentiment_summary(df, sample_size=None):
     analyzer = SentimentIntensityAnalyzer() if ensure_vader_lexicon() else None
     labels = []
-    for text in df['review/text'].fillna('').astype(str).head(sample_size):
+    texts = df['review/text'].fillna('').astype(str)
+    if sample_size is not None:
+        texts = texts.head(sample_size)
+
+    for text in texts:
         if analyzer is None:
             labels.append('Neutro')
             continue
